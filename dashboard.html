@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการงานประจำวัน - ปวช.2</title>
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #e8f5e9;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 90%;
+        }
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .todo-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+        .add-btn {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f9f9f9;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 5px solid #27ae60;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* สไตล์เมื่อทำงานเสร็จแล้ว */
+        li.completed {
+            border-left-color: #95a5a6;
+            background: #f1f2f6;
+        }
+        li.completed span {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+        .task-text {
+            cursor: pointer;
+            flex: 1;
+        }
+        .del-btn {
+            background-color: #ff7675;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .summary {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="header-bar">
+            <span id="welcomeUser" style="font-weight: bold; color: #2c3e50;"></span>
+            <button class="logout-btn" onclick="logout()">ออกจากระบบ</button>
+        </div>
+
+        <h3>รายการสิ่งที่ต้องทำ 📝</h3>
+        <div class="todo-box">
+            <input type="text" id="taskInput" placeholder="พิมพ์งานที่ต้องทำ...">
+            <button class="add-btn" onclick="addTask()">+ เพิ่ม</button>
+        </div>
+
+        <ul id="taskList"></ul>
+        <div class="summary" id="summaryText">ทั้งหมด 0 รายการ</div>
+    </div>
+
+    <script>
+        // 1. ตรวจสอบสิทธิ์การเข้าใช้งาน
+        const savedName = localStorage.getItem("username");
+        if (!savedName) {
+            window.location.href = "index.html";
+        } else {
+            document.getElementById("welcomeUser").innerText = "ผู้ใช้งาน: " + savedName;
+        }
+
+        // 2. ดึงข้อมูลรายการเก่าจาก localStorage (แปลงจากข้อความ JSON กลับเป็น Array)
+        let tasks = JSON.parse(localStorage.getItem("myTasks")) || [];
+
+        // 3. ฟังก์ชันแสดงผลรายการทั้งหมด (Read)
+        function renderTasks() {
+            const taskList = document.getElementById("taskList");
+            taskList.innerHTML = ""; // ล้างหน้าจอก่อนวาดใหม่
+
+            tasks.forEach((task, index) => {
+                const li = document.createElement("li");
+                if (task.done) li.classList.add("completed");
+
+                li.innerHTML = `
+                    <span class="task-text" onclick="toggleTask(${index})">${task.text}</span>
+                    <button class="del-btn" onclick="deleteTask(${index})">ลบ</button>
+                `;
+                taskList.appendChild(li);
+            });
+
+            // อัปเดตตัวเลขสรุปด้านล่าง
+            document.getElementById("summaryText").innerText = `ทั้งหมด ${tasks.length} รายการ`;
+           
+            // บันทึกข้อมูลล่าสุดลง localStorage (แปลง Array เป็นข้อความ JSON)
+            localStorage.setItem("myTasks", JSON.stringify(tasks));
+        }
+
+        // 4. ฟังก์ชันเพิ่มรายการใหม่ (Create)
+        function addTask() {
+            const taskInput = document.getElementById("taskInput");
+            const text = taskInput.value.trim();
+
+            if (text !== "") {
+                tasks.push({ text: text, done: false }); // เพิ่ม Object เข้าไปใน Array
+                taskInput.value = "";
+                renderTasks();
+            }
+        }
+
+        // 5. ฟังก์ชันสลับสถานะ ทำเสร็จ/ยังไม่เสร็จ (Update)
+        function toggleTask(index) {
+            tasks[index].done = !tasks[index].done;
+            renderTasks();
+        }
+
+        // 6. ฟังก์ชันลบรายการ (Delete)
+        function deleteTask(index) {
+            tasks.splice(index, 1); // ลบข้อมูลออกจาก Array ตามตำแหน่ง index
+            renderTasks();
+        }
+
+        // 7. ออกจากระบบ
+        function logout() {
+            localStorage.removeItem("username");
+            window.location.href = "index.html";
+        }
+
+        // สั่งให้แสดงผลทันทีเมื่อเปิดหน้าเว็บ
+        renderTasks();
+    </script>
+
+</body>
+</html>

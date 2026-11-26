@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าเข้าสู่ระบบ - เว็บแอปแรกของฉัน</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+        input {
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #errorMsg {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>เข้าสู่ระบบ</h2>
+        <p>กรุณากรอกชื่อเพื่อเข้าใช้งานแอปฯ</p>
+       
+        <input type="text" id="nameInput" placeholder="พิมพ์ชื่อของคุณ...">
+        <br>
+        <button onclick="login()">เข้าสู่หน้าหลัก</button>
+       
+        <p id="errorMsg"></p>
+    </div>
+
+    <script>
+        function login() {
+            const name = document.getElementById("nameInput").value;
+            const errorArea = document.getElementById("errorMsg");
+
+            if (name.trim() === "") {
+                errorArea.innerText = "กรุณาพิมพ์ชื่อก่อนเข้าสู่ระบบนะคะ 😊";
+            } else {
+                // 1. บันทึกชื่อลงในหน่วยความจำเบราว์เซอร์ (localStorage)
+                localStorage.setItem("username", name);
+               
+                // 2. สั่งเปลี่ยนหน้าไปยัง dashboard.html
+                window.location.href = "dashboard.html";
+            }
+        }
+    </script>
+
+</body>
+</html>
